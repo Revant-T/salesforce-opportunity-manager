@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "express-session": "^1.19.0",
+    "pkce-challenge": "^6.0.0"
+  }
+}
