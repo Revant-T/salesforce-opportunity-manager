@@ -178,27 +178,43 @@ app.get('/callback', async (req, res) => {
         console.log('OAuth successful!');
         console.log('Instance URL:', instance_url);
 
-        // Store Salesforce connection in the session
-        req.session.salesforce = {
-            accessToken: access_token,
-            instanceUrl: instance_url
-        };
-        startPlatformEventListener(
+// Store Salesforce connection in the session
+req.session.salesforce = {
+    accessToken: access_token,
+    instanceUrl: instance_url
+};
+
+startPlatformEventListener(
     access_token,
     instance_url
 );
 
-        // Remove PKCE verifier after successful OAuth
-        delete req.session.code_verifier;
+// Remove PKCE verifier after successful OAuth
+delete req.session.code_verifier;
 
-        console.log('Salesforce connection stored in session');
-console.log(
-    'Redirecting to frontend:',
-    process.env.FRONTEND_URL
-);
-        // Redirect back to React
-        res.redirect(process.env.FRONTEND_URL);
+console.log('Salesforce connection stored in session');
+console.log('Session ID:', req.sessionID);
 
+// Explicitly save the session before redirecting
+req.session.save(error => {
+
+    if (error) {
+        console.error('Session save failed:', error);
+
+        return res.status(500).send(
+            'Failed to save Salesforce session'
+        );
+    }
+
+    console.log('Session saved successfully');
+
+    console.log(
+        'Redirecting to frontend:',
+        process.env.FRONTEND_URL
+    );
+
+    res.redirect(process.env.FRONTEND_URL);
+});
     } catch (error) {
 
         console.error(
