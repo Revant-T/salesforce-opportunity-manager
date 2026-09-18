@@ -29,14 +29,19 @@ app.use(express.json());
 // SESSION
 // ======================================================
 
+app.set('trust proxy', 1);
+
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false,
+        secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        sameSite: 'lax'
+        sameSite:
+            process.env.NODE_ENV === 'production'
+                ? 'none'
+                : 'lax'
     }
 }));
 
@@ -187,9 +192,12 @@ app.get('/callback', async (req, res) => {
         delete req.session.code_verifier;
 
         console.log('Salesforce connection stored in session');
-
+console.log(
+    'Redirecting to frontend:',
+    process.env.FRONTEND_URL
+);
         // Redirect back to React
-        res.redirect('http://localhost:5173');
+        res.redirect(process.env.FRONTEND_URL);
 
     } catch (error) {
 
